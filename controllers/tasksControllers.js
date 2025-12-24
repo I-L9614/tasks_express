@@ -8,12 +8,13 @@ export async function getTasks(req, res) {
 }
 
 export async function getCompleted(req, res) {
+    try {
     let tasks = await readTasks()
     const completed = req.query.completed
-    if (completed === 'true'||completed==='false') {
+    if (completed) {
         tasks = tasks.filter(task => task.completed === completed)
         if (tasks.length === 0) {
-            res.send("nothing has found")
+            res.status(404).send(new Error('not found'))
         }
         else {
             res.json(tasks)
@@ -21,6 +22,8 @@ export async function getCompleted(req, res) {
     }
     else{
         res.send('no such thing')
+    }} catch {
+        res.status(500).json(Error)
     }
 }
 
@@ -43,7 +46,7 @@ export async function getTaskById(req, res) {
 
 export async function addTask(req,res) {
     const tasks = await readTasks();
-    const maxId = users.length > 0 ? Math.max(...users.map(u => u.id)) : 0
+    const maxId = tasks.length > 0 ? Math.max(...tasks.map(u => u.id)) : 0
     const newTask = {
         id:maxId + 1,
         ...req.body
