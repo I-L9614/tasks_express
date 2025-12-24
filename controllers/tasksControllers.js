@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs, { read } from 'fs'
 import { readTasks, writeTasks } from '../utils/readWrite.js'
 const tasksPath = './tasks.json'
 
@@ -49,6 +49,36 @@ export async function addTask(req,res) {
         ...req.body
     }
     tasks.push(newTask)
+    await writeTasks(tasks)
+    res.json(tasks)
+}
+
+export async function updateTask(req, res) {
+    const tasks = await readTasks()
+    const index = tasks.findIndex(task => task.id === parseInt(req.params.id))
+    if (!index) return res.status(404).json({ message: "Task not found" })
+    tasks[index] = {
+        id:maxId + 1,
+        ...req.body
+    }
+    await writeTasks(tasks)
+    res.send(tasks)
+}
+
+export async function changeTaskStatus(req,res) {
+    const tasks = await readTasks()
+    const index = tasks.findIndex(task => task.id === parseInt(req.param.id))
+    if (!index) {
+        return res.status(404).json({ message: "Task not found" })
+    }
+    tasks[index].completed = !tasks[index].completed
+    await writeTasks(tasks)
+    res.json(tasks[index])
+}
+
+export async function deleteTask(req,res) {
+    const tasks = await readTasks()
+    const newList = tasks.filter(task => task.id !== parseInt(req.param.id))
     await writeTasks(tasks)
     res.json(tasks)
 }
